@@ -794,7 +794,7 @@ footer{border-top:1px solid var(--line);padding:28px 0 40px;color:var(--muted);f
       e.target.textContent = on ? '답 숨기기' : '답 보기';
     }
     if(e.target.closest('.done-btn')){
-      if(done[id]) delete done[id]; else done[id]=true;
+      if(done[id]) delete done[id]; else { done[id]=true; var r=e.target.closest('.done-btn').getBoundingClientRect(); confetti(r.left+r.width/2, r.top+r.height/2); }
       store.set('done',done); renderSide(); renderHead();
       var b=$('.done-btn',card); b.setAttribute('aria-pressed',done[id]?'true':'false'); b.textContent=done[id]?'✓ 풀었어요':'풀었어요 표시';
       if(state.status==='todo' && done[id]) card.remove();
@@ -804,6 +804,42 @@ footer{border-top:1px solid var(--line);padding:28px 0 40px;color:var(--muted);f
     if(!e.target.classList.contains('memo')) return;
     memos[e.target.closest('.q').dataset.id]=e.target.value; store.set('memos',memos);
   });
+
+  // 색종이: (x,y)에서 80개가 위로 퍼졌다 떨어지고 2초 안에 사라짐
+  function confetti(x,y){
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var DUR=2000, N=80, G=1500, W=innerWidth, H=innerHeight, dpr=window.devicePixelRatio||1;
+    var c=document.createElement('canvas');
+    c.width=W*dpr; c.height=H*dpr;
+    c.style.cssText='position:fixed;left:0;top:0;width:'+W+'px;height:'+H+'px;pointer-events:none;z-index:9999';
+    c.setAttribute('aria-hidden','true');
+    document.body.appendChild(c);
+    var g=c.getContext('2d'); g.scale(dpr,dpr);
+    var cs=getComputedStyle(root), colors=['gram','edu','mod','cls','accent'].map(function(k){return cs.getPropertyValue('--'+k).trim();})
+      .filter(function(v){return v && CSS.supports('color',v);});
+    if(colors.length<3) colors=['#f43f5e','#f59e0b','#10b981','#3b82f6','#8b5cf6'];
+    var ps=[];
+    for(var i=0;i<N;i++){
+      var ang=-Math.PI/2+(Math.random()-.5)*Math.PI*.8, sp=450+Math.random()*450;
+      ps.push({x:x,y:y,vx:Math.cos(ang)*sp,vy:Math.sin(ang)*sp,w:6+Math.random()*5,h:3+Math.random()*4,
+        r:Math.random()*Math.PI*2,vr:(Math.random()-.5)*14,c:colors[i%colors.length]});
+    }
+    var t0=null, last=null;
+    function frame(now){
+      if(t0===null){t0=last=now;}
+      var t=now-t0, dt=Math.min((now-last)/1000,.05); last=now;
+      if(t>=DUR){c.remove(); return;}
+      var drag=Math.pow(.2,dt), alpha=t<DUR*.65?1:1-(t-DUR*.65)/(DUR*.35);
+      g.clearRect(0,0,W,H); g.globalAlpha=alpha;
+      ps.forEach(function(p){
+        p.vx*=drag; p.vy=p.vy*drag+G*dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.r+=p.vr*dt;
+        g.save(); g.translate(p.x,p.y); g.rotate(p.r); g.scale(1,Math.cos(p.r*1.7));
+        g.fillStyle=p.c; g.fillRect(-p.w/2,-p.h/2,p.w,p.h); g.restore();
+      });
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
 
   // ── 용어 사전 ──
   var T_ORDER = ['all','exam','edu','gram','mod','cls'];
