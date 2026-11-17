@@ -825,11 +825,6 @@ footer{border-top:1px solid var(--line);padding:28px 0 40px;color:var(--muted);f
     if(e.target.closest('.done-btn')){
       if(done[id]) delete done[id]; else { done[id]=true; var r=e.target.closest('.done-btn').getBoundingClientRect(); confetti(r.left+r.width/2, r.top+r.height/2); }
       store.set('done',done); renderSide(); renderHead();
-      // 영역의 모든 문제를 풀면 진행 막대에서 한 번 더 터짐
-      if(done[id] && doneCount(state.area)===byArea(state.area).length){
-        var tr=$('#areaHead .track');
-        if(tr){ setTimeout(function(){ var p=tr.getBoundingClientRect(); var y=p.top+p.height/2; if(y<0||y>innerHeight){ y=innerHeight*.6; } confetti(p.left+p.width/2, y); }, 350); }
-      }
       var b=$('.done-btn',card); b.setAttribute('aria-pressed',done[id]?'true':'false'); b.textContent=done[id]?'✓ 풀었어요':'풀었어요 표시';
       if(state.status==='todo' && done[id]) card.remove();
     }
