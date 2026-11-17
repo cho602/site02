@@ -104,6 +104,10 @@ main{min-height:70vh;padding-bottom:64px}
 .hero::before{content:"";position:absolute;inset:-62px 0 0 0;z-index:-1;background:radial-gradient(600px 300px at 15% 10%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%),radial-gradient(500px 280px at 85% 0%,color-mix(in srgb,var(--accent-2) 14%,transparent),transparent 70%)}
 .hero h1{font-size:clamp(2rem,5.4vw,3.2rem);font-weight:800;letter-spacing:-.04em;margin:12px 0 14px}
 .hero h1 .grad{background:linear-gradient(90deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.tw-c{visibility:hidden}
+.tw-cursor{display:inline-block;width:.07em;height:.95em;margin-left:.04em;vertical-align:-.1em;background:var(--accent);border-radius:1px}
+.tw-cursor.blink{animation:twblink 1s step-end infinite}
+@keyframes twblink{50%{opacity:0}}
 .hero p{font-size:1.08rem;color:var(--muted);max-width:600px;margin:0}
 .cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:12px;text-decoration:none;font-weight:600;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:.95rem}
@@ -721,6 +725,32 @@ footer{border-top:1px solid var(--line);padding:28px 0 40px;color:var(--muted);f
         '<div class="foot"><span>'+n+'문제 · '+d+'개 풂</span><span class="go">모아 보기 →</span></div></a>';
     }).join('');
   }
+
+  // 첫 화면 제목: 글자당 60ms 타자 효과 + 끝에서 깜빡이는 커서
+  (function(){
+    var h=$('#heroTitle'); if(!h) return;
+    h.setAttribute('aria-label', Array.prototype.map.call(h.childNodes,function(n){return n.nodeName==='BR'?' ':n.textContent;}).join('').replace(/\s+/g,' ').trim());
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var chars=[], w=document.createTreeWalker(h,NodeFilter.SHOW_TEXT), nodes=[];
+    while(w.nextNode()) nodes.push(w.currentNode);
+    nodes.forEach(function(tn){
+      var f=document.createDocumentFragment();
+      Array.from(tn.nodeValue).forEach(function(ch){
+        var s=document.createElement('span'); s.className='tw-c'; s.setAttribute('aria-hidden','true'); s.textContent=ch;
+        f.appendChild(s); chars.push(s);
+      });
+      tn.parentNode.replaceChild(f,tn);
+    });
+    if(!chars.length) return;
+    var cur=document.createElement('span'); cur.className='tw-cursor'; cur.setAttribute('aria-hidden','true');
+    chars[0].parentNode.insertBefore(cur,chars[0]);
+    var i=0;
+    (function step(){
+      if(i>=chars.length){cur.classList.add('blink'); return;}
+      chars[i].classList.remove('tw-c'); chars[i].after(cur); i++;
+      setTimeout(step,60);
+    })();
+  })();
 
   // 문제 모음
   var state = {area:'gram', type:'all', status:'all', year:'all', q:''};
