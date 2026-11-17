@@ -730,7 +730,6 @@ footer{border-top:1px solid var(--line);padding:28px 0 40px;color:var(--muted);f
   (function(){
     var h=$('#heroTitle'); if(!h) return;
     h.setAttribute('aria-label', Array.prototype.map.call(h.childNodes,function(n){return n.nodeName==='BR'?' ':n.textContent;}).join('').replace(/\s+/g,' ').trim());
-    if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     var chars=[], w=document.createTreeWalker(h,NodeFilter.SHOW_TEXT), nodes=[];
     while(w.nextNode()) nodes.push(w.currentNode);
     nodes.forEach(function(tn){
@@ -837,7 +836,6 @@ footer{border-top:1px solid var(--line);padding:28px 0 40px;color:var(--muted);f
 
   // 색종이: (x,y)에서 80개가 위로 퍼졌다 떨어지고 2초 안에 사라짐
   function confetti(x,y){
-    if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     var DUR=2000, N=80, G=1500, W=innerWidth, H=innerHeight, dpr=window.devicePixelRatio||1;
     var c=document.createElement('canvas');
     c.width=W*dpr; c.height=H*dpr;
